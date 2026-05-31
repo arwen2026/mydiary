@@ -1,0 +1,23 @@
+# 工具内部数据，禁止上传
+.workbuddy/
+
+# 临时安装包，不上传
+_install/
+
+# 系统/编辑器垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Node（项目目前不用，但留着兜底）
+node_modules/
+
+# Python（项目目前不用，但留着兜底）
+__pycache__/
+*.pyc
+.venv/
+venv/

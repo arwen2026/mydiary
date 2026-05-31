@@ -1,0 +1,47 @@
+:root {
+  --c-bg:        #FAF8F1;
+  --c-surface:   #FFFFFF;
+  --c-primary:   #5E8F4A;
+  --c-primary-d: #4A7239;
+  --c-accent:    #D4E25C;
+  --c-accent-d:  #3A4014;
+  --c-warm:      #E8C285;
+  --c-warm-d:    #5C3F0F;
+  --c-text-1:    #2A2E1F;
+  --c-text-2:    #8B897D;
+  --c-text-3:    #B5B3A8;
+  --c-border:    #E5E2D5;
+  --c-border-s:  #ECEAE1;
+
+  --c-tag-sight: #5E8F4A;
+  --c-tag-food:  #C46A2E;
+  --c-tag-stay:  #4A7299;
+  --c-tag-trans: #8B6FB0;
+  --c-tag-shop:  #B5953F;
+
+  --c-state-ok:   #5E8F4A;
+  --c-state-warn: #E8C285;
+  --c-state-bad:  #B5494A;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 14px;
+  --r-full: 999px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 14px;
+  --s-5: 16px;
+  --s-6: 18px;
+  --s-7: 24px;
+  --s-8: 32px;
+
+  --topbar-h: 52px;
+  --tabbar-h: 56px;
+  --max-w: 720px;
+}

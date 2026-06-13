@@ -51,6 +51,18 @@ export async function ingestFile(file) {
   return photo;
 }
 
+export async function ingestBlob(blob, originalName = 'cover.jpg') {
+  const photo = {
+    id: uid(),
+    blob,
+    originalName,
+    takenAt: null,
+    addedAt: new Date().toISOString()
+  };
+  await putPhoto(photo);
+  return photo;
+}
+
 const objectUrlCache = new Map();
 
 export async function photoIdToObjectUrl(photoId) {

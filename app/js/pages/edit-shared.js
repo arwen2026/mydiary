@@ -11,9 +11,13 @@ export function injectEditStylesOnce() {
     .form-section { margin-bottom: 18px; }
     .form-label { font-size: 12px; color: var(--c-text-2); margin-bottom: 6px; display: block; }
     .form-label .opt { color: var(--c-text-3); font-weight: 400; margin-left: 4px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
-    .form-row > .form-section { min-width: 0; margin-bottom: 0; }
-    .form-row > .form-section input { width: 100%; min-width: 0; }
+    .form-row { display: flex; gap: 10px; align-items: flex-start; }
+    .form-row > .form-section { flex: 1 1 0; min-width: 0; width: 0; margin-bottom: 0; }
+    .form-row > .form-section input {
+      display: block; width: 100%; min-width: 0; max-width: 100%;
+      box-sizing: border-box;
+      -webkit-appearance: none; appearance: none;
+    }
     .form-section input[type="date"],
     .form-section input[type="datetime-local"] { font-family: var(--font-sans); }
     .form-section textarea { min-height: 80px; }

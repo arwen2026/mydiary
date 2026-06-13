@@ -1,7 +1,7 @@
 import { mountPage } from '../shell.js';
 import { el } from '../utils.js';
 import { APP_NAME, VERSION } from '../config.js';
-import { exportJSON, importJSON, clearAllData } from '../export.js';
+import { exportJSON, shareJSON, importJSON, clearAllData } from '../export.js';
 
 export function renderMe() {
   injectStylesOnce();
@@ -15,6 +15,7 @@ export function renderMe() {
 
     el('div', { class: 'me-section' }, [
       el('div', { class: 'section-title' }, '数据'),
+      menuItem('⇪ 分享 / 备份', '调出系统分享，可 AirDrop、存到「文件」、发微信或邮件', shareJSON),
       menuItem('◇ 导出 JSON 备份', '把所有旅行 / 单日行 / 条目 / 缩略图打包成一个文件', exportJSON),
       menuItem('◆ 从 JSON 导入', '从备份文件恢复数据，冲突 id 会被覆盖', importJSON),
       menuItem('⚠ 清空所有数据', '不可撤销，建议先导出备份', clearAllData, true)

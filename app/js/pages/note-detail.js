@@ -3,6 +3,7 @@ import { el, fmtDate } from '../utils.js';
 import { getNote } from '../db.js';
 import { photoIdToObjectUrl } from '../photos.js';
 import { navigate } from '../router.js';
+import { openLightbox } from '../lightbox.js';
 
 export async function renderNoteDetail({ params }) {
   const n = await getNote(params.id);
@@ -33,7 +34,11 @@ export async function renderNoteDetail({ params }) {
     ]),
     el('div', { class: 'note-body' }, n.note || ''),
     photoUrls.length ? el('div', { class: 'note-photos' },
-      photoUrls.filter(Boolean).map(url => el('div', { class: 'note-photo' }, el('img', { src: url, alt: '' })))
+      photoUrls.filter(Boolean).map((url, i) => {
+        const tile = el('div', { class: 'note-photo' }, el('img', { src: url, alt: '' }));
+        tile.addEventListener('click', () => openLightbox(photoUrls.filter(Boolean), i));
+        return tile;
+      })
     ) : null
   ]);
 
@@ -53,7 +58,8 @@ function weekday(d) {
 }
 
 function injectStylesOnce() {
-  if (document.getElementById('note-detail-styles')) return;
+  const old = document.getElementById('note-detail-styles');
+  if (old) old.remove();
   const css = `
     .note-page { background: var(--c-surface); min-height: calc(100vh - var(--topbar-h) - var(--tabbar-h)); padding: 32px 24px 60px; }
     .note-head { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 0.5px solid var(--c-border); }
@@ -67,7 +73,7 @@ function injectStylesOnce() {
     .note-photos {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 24px;
     }
-    .note-photo { aspect-ratio: 4/3; border-radius: var(--r-md); overflow: hidden; background: var(--c-border-s); }
+    .note-photo { aspect-ratio: 4/3; border-radius: var(--r-md); overflow: hidden; background: var(--c-border-s); cursor: pointer; }
     .note-photo img { width: 100%; height: 100%; object-fit: cover; }
   `;
   const style = document.createElement('style');

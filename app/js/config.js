@@ -18,4 +18,4 @@ export const DAYOUT_SUBTYPES = [
 ];
 
 export const APP_NAME = '行程记录';
-export const VERSION = '1.5.0';
+export const VERSION = '1.5.1';

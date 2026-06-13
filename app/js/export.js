@@ -21,8 +21,8 @@ export async function importJSON() {
   const text = await file.text();
   const data = JSON.parse(text);
   if (!confirm(`即将导入 ${data.trips?.length || 0} 个旅行 + ${data.dayouts?.length || 0} 次外出 + ${data.entries?.length || 0} 条记录 + ${data.photos?.length || 0} 张缩略图。冲突 id 会被覆盖。继续吗？`)) return;
-  await importAll(data);
-  alert('导入完成');
+  const res = await importAll(data);
+  alert(`导入完成：${res.trips} 旅行 / ${res.dayouts} 外出 / ${res.entries} 记录 / ${res.photos} 张照片`);
   location.hash = '#/';
   location.reload();
 }

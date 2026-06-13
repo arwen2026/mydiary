@@ -217,18 +217,37 @@ export async function exportAll() {
 
 export async function importAll(payload) {
   if (!payload || payload.schema !== 'tripdiary/v1') throw new Error('备份格式不兼容');
-  const t = await tx(['trips','dayouts','notes','entries','photos'], 'readwrite');
-  for (const x of (payload.trips || []))   await reqToPromise(t.trips.put(x));
-  for (const x of (payload.dayouts || [])) await reqToPromise(t.dayouts.put(x));
-  for (const x of (payload.notes || []))   await reqToPromise(t.notes.put(x));
-  for (const x of (payload.entries || [])) await reqToPromise(t.entries.put(x));
+
+  // 关键：先在事务外把所有照片 dataURL 解码成 blob。
+  // IndexedDB 事务一旦 await 非数据库的异步操作（如 fetch）就会自动失效，
+  // 之前的写法在循环里 await dataUrlToBlob() 会导致照片写入全部失败（文字却能进），
+  // 所以这里把异步解码提前做完，事务内只做纯同步的数据库写入。
+  const photoRecords = [];
   for (const p of (payload.photos || [])) {
-    const blob = await dataUrlToBlob(p.thumbDataUrl);
-    await reqToPromise(t.photos.put({
-      id: p.id, blob, originalName: p.originalName, takenAt: p.takenAt, addedAt: p.addedAt
-    }));
+    try {
+      const blob = await dataUrlToBlob(p.thumbDataUrl);
+      photoRecords.push({
+        id: p.id, blob, originalName: p.originalName, takenAt: p.takenAt, addedAt: p.addedAt
+      });
+    } catch (err) {
+      console.warn('[import] 照片解码失败，跳过', p.id, err);
+    }
   }
+
+  const t = await tx(['trips','dayouts','notes','entries','photos'], 'readwrite');
+  for (const x of (payload.trips || []))   t.trips.put(x);
+  for (const x of (payload.dayouts || [])) t.dayouts.put(x);
+  for (const x of (payload.notes || []))   t.notes.put(x);
+  for (const x of (payload.entries || [])) t.entries.put(x);
+  for (const rec of photoRecords)          t.photos.put(rec);
   await t.done;
+  return {
+    trips: (payload.trips || []).length,
+    dayouts: (payload.dayouts || []).length,
+    notes: (payload.notes || []).length,
+    entries: (payload.entries || []).length,
+    photos: photoRecords.length
+  };
 }
 
 function blobToDataURL(blob) {

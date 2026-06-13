@@ -15,6 +15,34 @@ export async function exportJSON() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export async function shareJSON() {
+  const data = await exportAll();
+  const json = JSON.stringify(data, null, 2);
+  const stamp = new Date().toISOString().slice(0, 10);
+  const filename = `tripdiary-backup-${stamp}.json`;
+  const blob = new Blob([json], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+
+  // 优先用系统分享（手机可直接 AirDrop / 存到文件 / 发微信邮件）
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: '行程记录备份', text: filename });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // 用户主动取消，不当作错误
+      console.warn('[share] navigator.share 失败，回退下载', err);
+    }
+  }
+  // 不支持系统分享则回退为下载
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  alert('当前环境不支持系统分享，已改为下载到本地。');
+}
+
 export async function importJSON() {
   const file = await pickFile({ accept: '.json,application/json' });
   if (!file) return;

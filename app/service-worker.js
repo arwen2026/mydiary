@@ -1,4 +1,4 @@
-const CACHE = 'tripdiary-v1.4.2';
+const CACHE = 'tripdiary-v1.5.0';
 const ASSETS = [
   './',
   './index.html',

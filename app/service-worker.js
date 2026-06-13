@@ -1,4 +1,4 @@
-const CACHE = 'tripdiary-v1.2.0';
+const CACHE = 'tripdiary-v1.4.0';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,8 @@ const ASSETS = [
   './js/utils.js',
   './js/db.js',
   './js/photos.js',
+  './js/cropper.js',
+  './js/lightbox.js',
   './js/export.js',
   './js/pages/home.js',
   './js/pages/footprints.js',

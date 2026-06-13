@@ -1,4 +1,4 @@
-const CACHE = 'tripdiary-v1.5.1';
+const CACHE = 'tripdiary-v1.6.0';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS = [
   './css/layout.css',
   './js/main.js',
   './js/config.js',
+  './js/data/china-map.js',
   './js/router.js',
   './js/shell.js',
   './js/utils.js',

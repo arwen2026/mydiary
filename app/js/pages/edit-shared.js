@@ -1,15 +1,19 @@
 import { mountPage } from '../shell.js';
 import { el } from '../utils.js';
-import { ingestFile, photoIdToObjectUrl } from '../photos.js';
+import { ingestFile, ingestBlob, photoIdToObjectUrl } from '../photos.js';
 import { putPhoto } from '../db.js';
+import { cropImage } from '../cropper.js';
 
 export function injectEditStylesOnce() {
-  if (document.getElementById('edit-styles')) return;
+  const old = document.getElementById('edit-styles');
+  if (old) old.remove();
   const css = `
     .form-section { margin-bottom: 18px; }
     .form-label { font-size: 12px; color: var(--c-text-2); margin-bottom: 6px; display: block; }
     .form-label .opt { color: var(--c-text-3); font-weight: 400; margin-left: 4px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+    .form-row > .form-section { min-width: 0; margin-bottom: 0; }
+    .form-row > .form-section input { width: 100%; min-width: 0; }
     .form-section input[type="date"],
     .form-section input[type="datetime-local"] { font-family: var(--font-sans); }
     .form-section textarea { min-height: 80px; }
@@ -143,7 +147,9 @@ export function coverPicker(state, key, onChange) {
   picker.onclick = async () => {
     const f = await pickFile({ accept: 'image/*' });
     if (!f) return;
-    const photo = await ingestFile(f);
+    const cropped = await cropImage(f, 2);
+    if (!cropped) return;
+    const photo = await ingestBlob(cropped, f.name || 'cover.jpg');
     state[key] = photo.id;
     onChange?.();
     refreshCover();

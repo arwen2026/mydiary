@@ -3,6 +3,7 @@ import { el, fmtDate, fmtMoney } from '../utils.js';
 import { getDayout } from '../db.js';
 import { photoIdToObjectUrl } from '../photos.js';
 import { navigate } from '../router.js';
+import { openLightbox } from '../lightbox.js';
 
 export async function renderDayoutDetail({ params }) {
   const d = await getDayout(params.id);
@@ -42,7 +43,11 @@ export async function renderDayoutDetail({ params }) {
     ]) : null,
     d.note ? el('div', { class: 'note' }, d.note) : null,
     photoUrls.length ? el('div', { class: 'photos' },
-      photoUrls.filter(Boolean).map(url => el('div', { class: 'photo' }, el('img', { src: url, alt: '' })))
+      photoUrls.filter(Boolean).map((url, i) => {
+        const tile = el('div', { class: 'photo' }, el('img', { src: url, alt: '' }));
+        tile.addEventListener('click', () => openLightbox(photoUrls.filter(Boolean), i));
+        return tile;
+      })
     ) : null,
     el('div', { class: 'meta-cards' }, [
       el('div', { class: 'meta-card' }, [
@@ -97,7 +102,7 @@ function injectStylesOnce() {
       padding: 14px 16px; border-radius: var(--r-lg); border: 0.5px solid var(--c-border);
     }
     .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .photos .photo { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; background: var(--c-border-s); }
+    .photos .photo { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; background: var(--c-border-s); cursor: pointer; }
     .photos .photo img { width: 100%; height: 100%; object-fit: cover; }
 
     .meta-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

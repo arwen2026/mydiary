@@ -1,11 +1,13 @@
 import { mountPage } from '../shell.js';
 import { el, fmtDateRange, fmtMoney, dayDiff, fmtDate, fmtLocalHM } from '../utils.js';
 import { getTrip, listEntriesByTrip, deleteEntry, putTrip } from '../db.js';
-import { photoIdToObjectUrl, ingestFile } from '../photos.js';
+import { photoIdToObjectUrl, ingestFile, ingestBlob } from '../photos.js';
 import { navigate } from '../router.js';
 import { CATEGORIES } from '../config.js';
 import { renderReader } from './reader.js';
 import { exportTripAsHTML } from '../export.js';
+import { cropImage } from '../cropper.js';
+import { openLightbox } from '../lightbox.js';
 
 let activeDayKey = null;
 
@@ -126,7 +128,9 @@ function buildCover(trip, coverUrl) {
     console.log('[cover] picked file', f.name, f.type, f.size);
     wrap.dataset.busy = '1';
     try {
-      const photo = await ingestFile(f);
+      const cropped = await cropImage(f, 2);
+      if (!cropped) { wrap.dataset.busy = '0'; return; }
+      const photo = await ingestBlob(cropped, f.name || 'cover.jpg');
       console.log('[cover] photo ingested', photo.id, 'blob size=', photo.blob?.size);
       trip.coverPhotoId = photo.id;
       trip.updatedAt = new Date().toISOString();
@@ -270,7 +274,10 @@ async function renderTimeline(days, tripId) {
 async function renderEntry(entry, tripId, isLast) {
   const cat = CATEGORIES.find(c => c.id === entry.category) || CATEGORIES[0];
   const time = entry.datetime ? fmtLocalHM(entry.datetime) : '--:--';
-  const photoUrls = await Promise.all((entry.photos || []).slice(0, 3).map(p => photoIdToObjectUrl(p.id)));
+  const allPhotos = entry.photos || [];
+  const allUrls = await Promise.all(allPhotos.map(p => photoIdToObjectUrl(p.id)));
+  const shownUrls = allUrls.slice(0, 3);
+  const extra = allUrls.length - 3;
 
   const delBtn = el('button', {
     type: 'button',
@@ -282,6 +289,19 @@ async function renderEntry(entry, tripId, isLast) {
       handleEntryDelete(delBtn, entry, tripId);
     }
   }, '×');
+
+  const photoTiles = shownUrls.filter(Boolean).map((url, i) => {
+    const tile = el('div', { class: 'epic' }, el('img', { src: url, alt: '' }));
+    if (i === 2 && extra > 0) {
+      tile.appendChild(el('div', { class: 'epic-more' }, `+${extra}`));
+    }
+    tile.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openLightbox(allUrls, i);
+    });
+    return tile;
+  });
 
   return el('a', {
     class: 'entry-row',
@@ -297,13 +317,10 @@ async function renderEntry(entry, tripId, isLast) {
       el('div', { class: 'entry-cat', style: { color: cat.color } }, cat.label),
       el('div', { class: 'entry-title' }, entry.title || '未命名'),
       entry.note ? el('div', { class: 'entry-note' }, entry.note) : null,
-      photoUrls.filter(Boolean).length ? el('div', { class: 'entry-photos' },
-        photoUrls.filter(Boolean).map(url => el('div', { class: 'epic' }, el('img', { src: url, alt: '' })))
-      ) : null,
+      photoTiles.length ? el('div', { class: 'entry-photos' }, photoTiles) : null,
       el('div', { class: 'entry-foot' }, [
         entry.location ? el('span', {}, entry.location) : null,
-        entry.cost ? el('span', { class: 'cost' }, fmtMoney(entry.cost)) : null,
-        (entry.photos?.length || 0) > 3 ? el('span', { class: 'muted' }, `+${entry.photos.length - 3} 照片`) : null
+        entry.cost ? el('span', { class: 'cost' }, fmtMoney(entry.cost)) : null
       ])
     ])
   ]);
@@ -536,8 +553,13 @@ function injectStylesOnce() {
     .entry-photos {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 10px;
     }
-    .epic { aspect-ratio: 1; border-radius: var(--r-sm); overflow: hidden; background: var(--c-border-s); }
+    .epic { position: relative; aspect-ratio: 1; border-radius: var(--r-sm); overflow: hidden; background: var(--c-border-s); cursor: pointer; }
     .epic img { width: 100%; height: 100%; object-fit: cover; }
+    .epic .epic-more {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; font-weight: 500;
+    }
     .entry-foot {
       display: flex; gap: 12px; flex-wrap: wrap;
       margin-top: 8px; font-size: 11px; color: var(--c-text-2);
